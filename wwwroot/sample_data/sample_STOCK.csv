@@ -1,0 +1,3 @@
+SKU,Warehouse,StockQty,OnOrder,ReorderLevel
+6008M-00--,WH1,200,50,20
+WX01000012,WH2,150,20,10

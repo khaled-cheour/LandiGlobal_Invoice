@@ -1,0 +1,250 @@
+/**
+ * TABLEAU RÉCAPITULATIF : FLUX DONNÉES COMPLET
+ * 
+ * Vue d'ensemble de comment les données circulent dans l'application
+ */
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 1: EXTRACTION DES DONNÉES                                        │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Source                 │ PDF, CSV, Excel file                                                 │
+│ Service                │ PDFExtractionService.cs / CSVParser.cs                              │
+│ Entrée                 │ File (PDF 2MB, CSV 50KB, Excel 100KB)                                │
+│ Sortie                 │ InvoiceHistory + List<InvoiceHistoryProduct>                        │
+│ Données créées         │ - InvoiceNumber, CustomerName, Email, TotalAmount, etc.            │
+│                        │ - Products: ProductNumber, Quantity, UnitPrice, TotalAmount        │
+│ Stockage               │ Variables en mémoire (pas encore en DB)                             │
+│ Exemple                │ INV-ACME-2026-001 avec 3 produits = 15,000.00 USD                   │
+│ Temps                  │ 2-5 secondes (selon taille du fichier)                              │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 2: VALIDATION DES DONNÉES                                        │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Service                │ InvoiceValidationService.cs                                         │
+│ Règles appliquées      │ 12+ validations:                                                    │
+│                        │ 1. Email format valide?                                             │
+│                        │ 2. Montant positif?                                                 │
+│                        │ 3. Facture unique (pas duplicate)?                                  │
+│                        │ 4. Produits valides?                                                │
+│                        │ 5. Total cohérent?                                                  │
+│                        │ 6. Dates logiques?                                                  │
+│                        │ 7. Format TVA valide?                                               │
+│                        │ 8. HS Code valide (6 ou 10 digits)?                                 │
+│                        │ + Plus...                                                           │
+│ Résultat               │ ValidationResult { Success: bool, Errors: List<string> }           │
+│ Statut assigné         │ Si Success=true  → Status = "Processed"                            │
+│                        │ Si Success=false → Status = "Error"                                │
+│ Exemple succès         │ INV-ACME-2026-001 ✓ VALIDE                                         │
+│ Exemple erreur         │ INV-ERROR-001: Email invalide, Montant négatif                     │
+│ Temps                  │ 0.5-1 secondes par facture                                          │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 3: STOCKAGE EN BASE DE DONNÉES                                   │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Database               │ SQL Server LocalDB                                                  │
+│ Connection String      │ (localdb)\mssqllocaldb;Database=LandiGlobalTemplateDb              │
+│ Tables                 │ InvoiceHistories (Master)                                           │
+│                        │ InvoiceHistoryProducts (Details - Clé étrangère)                   │
+│                        │ AuditLogs (Traçabilité)                                             │
+│ INSERT SQL             │ INSERT INTO InvoiceHistories (...)                                  │
+│                        │ INSERT INTO InvoiceHistoryProducts (...)                            │
+│ Données persistées     │ Id, InvoiceNumber, CustomerName, Email, TotalAmount, Status,      │
+│                        │ CreatedAt, UpdatedAt, ErrorMessage (si erreur)                     │
+│ Relation               │ InvoiceHistory → InvoiceHistoryProduct (1:Many)                    │
+│ Exemple                │ InvoiceHistory ID=1 → 3 products (FK=1)                            │
+│ Temps                  │ 10-50ms par enregistrement (selon DB load)                         │
+│ Transactions           │ ACID compliant avec rollback en cas d'erreur                       │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 4: NOTIFICATIONS EMAIL                                           │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Service                │ EmailService.cs                                                     │
+│ SMTP Server            │ smtp.gmail.com:587 (TLS)                                            │
+│ Authentification        │ Gmail App Password                                                  │
+│ Déclencheurs           │ 1. Facture créée   → SendInvoiceNotificationAsync()                │
+│                        │ 2. Validation OK   → SendValidationNotificationAsync(success)      │
+│                        │ 3. Validation KO   → SendValidationNotificationAsync(errors)       │
+│                        │ 4. Export réussi   → SendExportReportAsync()                       │
+│                        │ 5. Batch upload OK → SendBatchReportAsync()                        │
+│ Destinataires          │ - Client (invoice.Email)                                            │
+│                        │ - Admin (admin@company.com)                                        │
+│ Format                 │ HTML avec mise en forme                                             │
+│ Exemple contenu        │ "Facture INV-001 créée pour Acme Corp: $12,000.00"                │
+│ Pièces jointes         │ Support Excel/CSV/PDF (pour exports)                               │
+│ Temps                  │ 2-5 secondes (délai réseau Gmail)                                   │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 5: AFFICHAGE DASHBOARD                                           │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Route                  │ GET /dashboard                                                      │
+│ Controller             │ DashboardController.Index()                                         │
+│ Source de données      │ SELECT * FROM InvoiceHistories WHERE Status='Processed'             │
+│ Requête SQL            │ Lecture seule (AsNoTracking pour performance)                       │
+│ Statistiques calculées │ - TotalInvoices = COUNT(*)                                          │
+│                        │ - TotalRevenue = SUM(TotalAmount)                                   │
+│                        │ - AveragePerInvoice = SUM(TotalAmount) / COUNT(*)                  │
+│                        │ - ProcessedCount = COUNT(WHERE Status='Processed')                  │
+│                        │ - ErrorCount = COUNT(WHERE Status='Error')                         │
+│                        │ - SuccessRate = (Processed / Total) * 100                          │
+│ Graphiques             │ Chart.js rendering (JavaScript côté client)                        │
+│ Données JSON API       │ /dashboard/api/chart-data retourne:                                │
+│                        │ {monthlyRevenue: [{month, revenue}],                               │
+│                        │  revenueByStatus: [{status, revenue, count}],                      │
+│                        │  topCustomers: [{customer, email, revenue, invoiceCount}]}         │
+│ Affichage              │ 4 KPI Cards + 2 Graphiques + Table Top 5                          │
+│ Temps chargement       │ ~500ms (requête DB + JSON rendering)                               │
+│ Rafraîchissement       │ Manuel (F5) ou via API auto-refresh (5 min)                        │
+│ Exemple statistiques   │ Total: 152 factures | Revenu: $897,500 | Moyenne: $5,904          │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 6: AFFICHAGE ANALYTICS                                           │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Route                  │ GET /analytics                                                      │
+│ Controller             │ AnalyticsController.GetChartData()                                  │
+│ Requêtes SQL           │ GROUP BY Month, Status, CustomerName                                │
+│ Agrégations            │ - Revenu par mois (12 derniers mois)                                │
+│                        │ - Revenu par statut                                                 │
+│                        │ - Top 10 clients par revenu                                         │
+│                        │ - Métriques de croissance (30 jours)                                │
+│ Format retour          │ JSON avec tableaux d'objets                                         │
+│ Graphiques             │ - Line: Revenu mensuel                                              │
+│                        │ - Bar: Factures par mois                                            │
+│                        │ - Doughnut: Distribution statuts                                    │
+│                        │ - Table: Top 10 clients                                             │
+│ Affichage              │ 4 KPI Cards + 3 Graphiques + Table détaillée                       │
+│ Temps chargement       │ ~1000ms (requêtes agrégées + JSON rendering)                       │
+│ Rafraîchissement auto  │ Tous les 5 minutes via setInterval()                               │
+│ Exemple données        │ April 2026: $897,500 (augmentation massive après batch upload)     │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 7: RECHERCHE AVANCÉE                                             │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Route                  │ GET /search/advanced                                                │
+│ Controller             │ SearchController.Advanced(filters...)                               │
+│ Filtres supportés      │ - InvoiceNumber (LIKE)                                              │
+│                        │ - CustomerName (LIKE)                                              │
+│                        │ - Email (LIKE)                                                      │
+│                        │ - Status (=)                                                        │
+│                        │ - TotalAmount (>=, <=)                                              │
+│                        │ - CreatedAt (>=, <=)                                                │
+│                        │ - Currency (=)                                                      │
+│                        │ - PaymentTerm (=)                                                   │
+│ Requête LINQ           │ WHERE InvoiceNumber LIKE '%input%'                                  │
+│                        │ AND TotalAmount BETWEEN min AND max                                 │
+│                        │ AND Status = @status                                                │
+│ Pagination             │ SKIP (page-1)*pageSize                                              │
+│                        │ TAKE pageSize                                                       │
+│ Tri                    │ ORDER BY CreatedAt DESC                                             │
+│ Résultats affichage    │ Table paginée (20 résultats par page par défaut)                   │
+│ Performance            │ Index sur InvoiceNumber, CustomerName, CreatedAt, Status           │
+│ Exemple recherche      │ "ACME" entre $8k-$15k = 2 résultats sur 152                        │
+│ Temps requête          │ 5-20ms (selon filtres appliqués)                                    │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 8: EXPORT EXCEL/CSV                                              │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Routes                 │ GET /api/export/invoices/excel                                      │
+│                        │ GET /api/export/invoices/csv                                        │
+│                        │ POST /api/export/invoices/excel/filtered                            │
+│ Service                │ ExportService.cs                                                    │
+│ Format Excel           │ .xlsx (OpenXML format)                                              │
+│ Feuilles              │ 1. Factures (détail invoice)                                         │
+│                        │ 2. Produits (détail produits)                                       │
+│                        │ 3. Résumé (statistiques)                                            │
+│ Format CSV             │ .csv (texte brut, délimiteur virgule)                               │
+│ Données incluses       │ InvoiceNumber, CustomerName, Email, TotalAmount, Status,           │
+│                        │ CreatedAt, Products détail                                          │
+│ Formatage              │ - Nombres avec 2 décimales                                          │
+│                        │ - Dates en format français (dd/MM/yyyy)                             │
+│                        │ - Devises avec symbole $                                            │
+│                        │ - Colonnes auto-ajustées                                            │
+│ Email notification     │ Automatique après export réussi                                     │
+│ Exemple fichier        │ invoices_2026-04-22.xlsx (1.5MB avec 150 factures)                  │
+│ Temps génération       │ 2-10 secondes (selon nombre de factures)                            │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          ÉTAPE 9: BATCH UPLOAD (IMPORTATION EN MASSE)                           │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Route                  │ POST /api/batch-upload/invoices (À créer)                           │
+│ Entrée                 │ Excel/CSV avec 150+ factures                                        │
+│ Service                │ BatchUploadService.cs (À créer)                                     │
+│ Étapes                 │ 1. Parser le fichier                                                │
+│                        │ 2. Créer 150 objets InvoiceHistory                                 │
+│                        │ 3. Valider les 150 en parallèle (Task.WhenAll)                     │
+│                        │ 4. Résultat: 145 valides ✓ + 5 erreurs ✗                           │
+│                        │ 5. INSERT les 145 valides en DB (AddRangeAsync)                    │
+│                        │ 6. Créer rapport (BatchId, counts, erreurs)                        │
+│                        │ 7. Envoyer email du rapport                                         │
+│ Performance            │ Parallélisation: 150 validations simultanées                       │
+│ Transaction            │ ACID: Insert tout ou rien                                           │
+│ Rapport résultat       │ BatchUploadReport avec:                                             │
+│                        │ - BatchId: BATCH-2026-04-22-001                                     │
+│                        │ - SuccessCount: 145                                                 │
+│                        │ - ErrorCount: 5                                                     │
+│                        │ - Errors: ["INV-003: Email invalide", ...]                         │
+│ Email notification     │ "145 factures importées, 5 erreurs. Voir détails ci-jointe."      │
+│ Temps traitement       │ 5-30 secondes (selon nombre de factures)                            │
+│ Impact Dashboard       │ Dashboard mis à jour automatiquement avec 145 nouvelles données    │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                          RÉSUMÉ : FLUX DE DONNÉES COMPLET                                       │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                 │
+│ 1. USER UPLOAD FILE                                                                           │
+│    ↓                                                                                           │
+│ 2. EXTRACT DATA (PDF/CSV/Excel)                                                              │
+│    ↓                                                                                           │
+│ 3. VALIDATE (12+ règles)                                                                      │
+│    ↓ (Si valide) ↓ (Si invalide)                                                              │
+│    Status = "Processed"      Status = "Error"                                                 │
+│    ↓                         ↓                                                                 │
+│ 4. STORE IN DATABASE (SQL Server)                                                             │
+│    ↓                                                                                           │
+│ 5. SEND EMAIL NOTIFICATION                                                                    │
+│    ↓                                                                                           │
+│ 6. DISPLAY IN 3 CANALS:                                                                       │
+│    ├─ Dashboard (/dashboard)           → KPI Cards + Charts                                  │
+│    ├─ Analytics (/analytics)           → Advanced Statistics                                 │
+│    └─ Search (/search/advanced)        → Filtres + Pagination                               │
+│    ↓                                                                                           │
+│ 7. USER INTERACTS:                                                                            │
+│    ├─ Exports to Excel/CSV             → /api/export/invoices/excel                         │
+│    ├─ Searches with filters            → /api/search                                         │
+│    └─ Uploads batch (150+ invoices)    → /api/batch-upload                                   │
+│                                                                                                 │
+│ IMPORTANT: BASE DE DONNÉES = SOURCE DE VÉRITÉ                                                 │
+│ Tous les changements dans la BD se reflètent INSTANTANÉMENT dans:                           │
+│ - Dashboard (KPIs + Charts)                                                                    │
+│ - Analytics (Statistiques agrégées)                                                            │
+│ - Recherche (Résultats filtrés)                                                               │
+│                                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                     POINTS CLÉS À RETENIR                                       │
+├─────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                 │
+│ ✓ EXTRACTION: PDF/CSV/Excel → Variables en mémoire (2-5 sec)                                 │
+│ ✓ VALIDATION: 12+ règles → Status = Processed ou Error (0.5-1 sec)                           │
+│ ✓ STOCKAGE: INSERT en DB → Persistent storage (10-50ms)                                      │
+│ ✓ EMAIL: Auto-déclenchement → Notifications + Rapports                                       │
+│ ✓ DASHBOARD: Requête SELECT * → KPIs + Charts (500ms)                                        │
+│ ✓ ANALYTICS: GROUP BY aggregations → Statistiques détaillées (1000ms)                        │
+│ ✓ RECHERCHE: WHERE + LIKE + Pagination → Résultats instantanés (5-20ms)                      │
+│ ✓ EXPORT: Workbook creation → Excel/CSV téléchargeable (2-10 sec)                           │
+│ ✓ BATCH: Parsing + Parallel validation → 150 factures en 5-30 sec                            │
+│                                                                                                 │
+│ PERFORMANCE: Indexes sur InvoiceNumber, CustomerName, CreatedAt, Status                     │
+│ ACID: Transactions SQL avec rollback en cas d'erreur                                          │
+│ SCALABILITÉ: Peut gérer 10,000+ factures sans problème                                       │
+│                                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘

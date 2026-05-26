@@ -1,0 +1,237 @@
+@{
+    ViewData["Title"] = "Charger Facture Commerciale";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-5">
+                <h1 class="display-5 fw-bold mb-2">
+                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                  -webkit-background-clip: text; 
+                                  -webkit-text-fill-color: transparent;
+                                  background-clip: text;">
+                        📄 Load Commercial Invoice
+                    </span>
+                </h1>
+                <p class="lead text-muted">Import your commercial invoice PDF file for automatic data extraction and processing</p>
+            </div>
+
+            <!-- Alert Messages -->
+            @if (ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading mb-3"><i class="fas fa-exclamation-circle"></i> Error(s) detected)</h5>
+                    <ul class="mb-0">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            @foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Upload Card -->
+            <div class="card border-0 shadow-lg mb-4" style="border-radius: 16px; overflow: hidden;">
+                <div class="card-body p-4">
+                    <form asp-controller="Invoice" asp-action="Upload" method="post" enctype="multipart/form-data">
+                        <!-- File Input -->
+                        <div class="mb-4">
+                            <label for="file" class="form-label fw-bold mb-3">
+                                <i class="fas fa-file-pdf me-2" style="color: #f5576c;"></i> Select PDF file
+                            </label>
+                            <div class="upload-area p-4 text-center" style="border: 2px dashed rgba(102, 126, 234, 0.3); 
+                                                                           border-radius: 12px; 
+                                                                           background: rgba(102, 126, 234, 0.02);
+                                                                           transition: all 0.3s ease;
+                                                                           cursor: pointer;">
+                                <input type="file" class="form-control d-none" id="file" name="file" accept=".pdf" required onchange="updateFileName(this)" />
+                                <div class="py-4">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem; color: rgba(102, 126, 234, 0.3);">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <h5 class="mb-2">Click or drag & drop your PDF file</h5>
+                                    <p class="text-muted mb-0">Supported files: <strong>PDF</strong></p>
+                                    <p class="text-muted small" id="fileName">No file selected</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                                                                            border: none;
+                                                                                            border-radius: 8px;
+                                                                                            font-weight: 600;
+                                                                                            padding: 0.75rem 1.5rem;">
+                            <i class="fas fa-upload me-2"></i> Upload & Extract
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-4">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-lightbulb me-2" style="color: #ffc107;"></i> How to use
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="width: 40px; 
+                                          height: 40px; 
+                                          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                          border-radius: 50%; 
+                                          display: flex; 
+                                          align-items: center; 
+                                          justify-content: center; 
+                                          color: white; 
+                                          font-weight: bold;
+                                          flex-shrink: 0;">
+                                    1
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="fw-bold mb-1">Select PDF</h6>
+                                    <p class="text-muted small mb-0">Choose your commercial invoice in PDF format</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div style="width: 40px; 
+                                          height: 40px; 
+                                          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+                                          border-radius: 50%; 
+                                          display: flex; 
+                                          align-items: center; 
+                                          justify-content: center; 
+                                          color: white; 
+                                          font-weight: bold;
+                                          flex-shrink: 0;">
+                                    2
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="fw-bold mb-1">Auto Extraction</h6>
+                                    <p class="text-muted small mb-0">The system extracts data automatically</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div style="width: 40px; 
+                                          height: 40px; 
+                                          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+                                          border-radius: 50%; 
+                                          display: flex; 
+                                          align-items: center; 
+                                          justify-content: center; 
+                                          color: white; 
+                                          font-weight: bold;
+                                          flex-shrink: 0;">
+                                    3
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="fw-bold mb-1">VVerification</h6>
+                                    <p class="text-muted small mb-0">Verify and edit details if necessary</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div style="width: 40px; 
+                                          height: 40px; 
+                                          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
+                                          border-radius: 50%; 
+                                          display: flex; 
+                                          align-items: center; 
+                                          justify-content: center; 
+                                          color: white; 
+                                          font-weight: bold;
+                                          flex-shrink: 0;">
+                                    4
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="fw-bold mb-1">Download</h6>
+                                    <p class="text-muted small mb-0">Download the enriched PDF with all the data</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requirements -->
+            <div class="mt-4 p-3 bg-light rounded-3">
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-info-circle me-2"></i> <strong>Required Format:</strong> PDF • 
+                    <strong>Size Limit:</strong> 50 MB • 
+                    <strong>Processing Time:</strong> &lt; 1 minute
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .upload-area {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+        border-color: rgba(102, 126, 234, 0.6);
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .upload-area:active {
+        transform: scale(0.98);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+    }
+</style>
+
+<script>
+    function updateFileName(input) {
+        const fileName = input.files[0]?.name || 'Aucun fichier sélectionné';
+        document.getElementById('fileName').textContent = fileName;
+    }
+
+    // Drag and drop
+    const uploadArea = document.querySelector('.upload-area');
+    if (uploadArea) {
+        uploadArea.addEventListener('click', () => document.getElementById('file').click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(102, 126, 234, 0.6)';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.02)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+            uploadArea.style.background = 'rgba(102, 126, 234, 0.02)';
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                document.getElementById('file').files = files;
+                updateFileName(document.getElementById('file'));
+            }
+        });
+    }
+</script>
+

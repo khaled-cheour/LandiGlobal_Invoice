@@ -1,0 +1,517 @@
+@{
+    ViewData["Title"] = "Analytics & Statistiques";
+}
+
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                   -webkit-background-clip: text; 
+                   -webkit-text-fill-color: transparent;
+                   background-clip: text;
+                   font-weight: 700;
+                   display-5">
+            📊 Analytics & Statistiques
+        </h1>
+        <p class="text-muted">Vue détaillée de vos performances et métriques clés</p>
+    </div>
+
+    <!-- KPI Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #667eea; border-radius: 12px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted small mb-1 fw-bold">Total Factures</p>
+                            <h3 class="text-primary fw-bold mb-0" id="totalInvoices">-</h3>
+                        </div>
+                        <div style="font-size: 2rem; opacity: 0.3;">📋</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #43e97b; border-radius: 12px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted small mb-1 fw-bold">Revenu Total</p>
+                            <h3 class="text-success fw-bold mb-0" id="totalRevenue">-</h3>
+                        </div>
+                        <div style="font-size: 2rem; opacity: 0.3;">💰</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #f093fb; border-radius: 12px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted small mb-1 fw-bold">Moyenne/Facture</p>
+                            <h3 class="fw-bold mb-0" id="avgInvoice" style="color: #f093fb;">-</h3>
+                        </div>
+                        <div style="font-size: 2rem; opacity: 0.3;">📈</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #4facfe; border-radius: 12px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted small mb-1 fw-bold">Taux Succès</p>
+                            <h3 class="fw-bold mb-0" id="successRate" style="color: #4facfe;">-</h3>
+                        </div>
+                        <div style="font-size: 2rem; opacity: 0.3;">✅</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Metrics Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-3">
+                    <h6 class="mb-0 fw-bold small">Croissance 30j</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td class="text-muted small">Factures</td>
+                            <td class="fw-bold text-end" id="monthInvoices">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted small">Revenu</td>
+                            <td class="fw-bold text-success text-end" id="monthRevenue">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted small">Croissance</td>
+                            <td class="fw-bold text-end" id="growthRate">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-3">
+                    <h6 class="mb-0 fw-bold small">Distribution Statuts</h6>
+                </div>
+                <div class="card-body">
+                    <div id="statusTable" style="font-size: 0.9rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-3">
+                    <h6 class="mb-0 fw-bold small">Par Devise (💱)</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="currencyChart" style="max-height: 200px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Charts -->
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-3">
+                    <h6 class="mb-0 fw-bold">📈 Revenus 12 derniers mois</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-light border-0 p-3">
+                    <h6 class="mb-0 fw-bold">📦 Factures par mois</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="invoiceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    let revenueChart, invoiceChart, currencyChart;
+
+    async function loadAnalytics() {
+        try {
+            const response = await fetch('@Url.Action("GetAnalyticsData", "Analytics")');
+            const data = await response.json();
+
+            // Update KPIs
+            document.getElementById('totalInvoices').textContent = data.totalInvoices;
+            document.getElementById('totalRevenue').textContent = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(data.totalRevenue);
+            document.getElementById('avgInvoice').textContent = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(data.averageInvoice);
+            document.getElementById('successRate').textContent = data.successRate + '%';
+
+            // Update secondary metrics
+            document.getElementById('monthInvoices').textContent = data.currentMonthInvoices;
+            document.getElementById('monthRevenue').textContent = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(data.currentMonthRevenue);
+            document.getElementById('growthRate').textContent = (data.growthRate >= 0 ? '+' : '') + data.growthRate.toFixed(1) + '%';
+
+            // Status table
+            let statusHtml = '';
+            data.statusDistribution.forEach(s => {
+                statusHtml += `
+                    <div class="d-flex justify-content-between mb-2">
+                        <small class="text-muted">${s.status}</small>
+                        <small class="fw-bold">${s.count}</small>
+                    </div>
+                `;
+            });
+            document.getElementById('statusTable').innerHTML = statusHtml;
+
+            // Revenue Chart
+            if (revenueChart) revenueChart.destroy();
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: data.monthlyRevenue.map(m => m.month),
+                    datasets: [{
+                        label: 'Revenu mensuel',
+                        data: data.monthlyRevenue.map(m => m.revenue),
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgb(102, 126, 234)',
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Invoice Chart
+            if (invoiceChart) invoiceChart.destroy();
+            const invoiceCtx = document.getElementById('invoiceChart').getContext('2d');
+            invoiceChart = new Chart(invoiceCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.monthlyInvoices.map(m => m.month),
+                    datasets: [{
+                        label: 'Nombre de factures',
+                        data: data.monthlyInvoices.map(m => m.count),
+                        backgroundColor: 'rgba(67, 233, 123, 0.6)',
+                        borderColor: 'rgb(67, 233, 123)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Currency Chart
+            if (currencyChart) currencyChart.destroy();
+            const currencyCtx = document.getElementById('currencyChart').getContext('2d');
+            currencyChart = new Chart(currencyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.byCurrency.map(c => c.currency),
+                    datasets: [{
+                        data: data.byCurrency.map(c => c.count),
+                        backgroundColor: ['#667eea', '#f093fb', '#4facfe', '#43e97b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        } catch (error) {
+            console.error('Erreur lors du chargement des analytics:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadAnalytics);
+</script>
+
+                    <table class="table table-sm">
+                        <tr>
+                            <td class="text-muted">Factures (30j)</td>
+                            <td class="fw-bold" id="monthInvoices">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Revenu (30j)</td>
+                            <td class="fw-bold text-success" id="monthRevenue">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Taux Croissance</td>
+                            <td class="fw-bold" id="growthRate">-</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Moyenne/30j</td>
+                            <td class="fw-bold" id="monthAvg">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution Statuts -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">📌 Distribution Statuts</h5>
+                </div>
+                <div class="card-body">
+                    <div id="statusTable">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Devises -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">💱 Par Devise</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="currencyChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques principaux -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">📈 Revenu Mensuel (12 derniers mois)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">📦 Factures par Mois</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="invoicesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Clients -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">🏆 Top 10 Clients par Revenu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="topClientsTable">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <th>Rang</th>
+                                    <th>Client</th>
+                                    <th>Email</th>
+                                    <th class="text-end">Revenu</th>
+                                    <th class="text-center">Factures</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="text-center"><span class="spinner-border spinner-border-sm"></span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        let revenueChart, invoicesChart, currencyChart;
+
+        // Charger les données
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/analytics/api/chart-data');
+                if (!response.ok) throw new Error('Erreur réseau');
+
+                const data = await response.json();
+
+                // KPI Cards
+                const totalTx = data.totalTransactions;
+                document.getElementById('totalInvoices').textContent = totalTx.total.toLocaleString('fr-FR');
+                document.getElementById('totalRevenue').textContent = '$' + totalTx.total.toLocaleString('fr-FR');
+                document.getElementById('successRate').textContent = totalTx.successRate + '%';
+
+                const avgData = data.averageInvoiceValue;
+                document.getElementById('avgInvoice').textContent = '$' + avgData.average.toLocaleString('fr-FR');
+
+                // Croissance
+                const metrics = data.conversionMetrics;
+                document.getElementById('monthInvoices').textContent = metrics.thisMonthCount;
+                document.getElementById('monthRevenue').textContent = '$' + metrics.thisMonthRevenue.toLocaleString('fr-FR');
+                document.getElementById('growthRate').textContent = (metrics.growthRate > 0 ? '+' : '') + metrics.growthRate + '%';
+                document.getElementById('monthAvg').textContent = '$' + metrics.avgInvoiceThisMonth.toLocaleString('fr-FR');
+
+                // Graphiques
+                drawRevenueChart(data.monthlyRevenue);
+                drawInvoicesChart(data.invoicesByMonth);
+                drawStatusTable(data.revenueByStatus);
+                drawCurrencyChart(data.revenueByStatus);
+                drawTopClientsTable(data.topCustomers);
+
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function drawRevenueChart(data) {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.month),
+                    datasets: [{
+                        label: 'Revenu ($)',
+                        data: data.map(d => d.revenue),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } }
+                }
+            });
+        }
+
+        function drawInvoicesChart(data) {
+            const ctx = document.getElementById('invoicesChart').getContext('2d');
+            if (invoicesChart) invoicesChart.destroy();
+
+            invoicesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.month),
+                    datasets: [{
+                        label: 'Nombre de Factures',
+                        data: data.map(d => d.count),
+                        backgroundColor: '#764ba2'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function drawStatusTable(data) {
+            const html = data.map(s => `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span>${s.status}</span>
+                        <span class="badge bg-primary">${s.count}</span>
+                    </div>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar" style="width: ${s.percentage}%">${s.percentage}%</div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('statusTable').innerHTML = html;
+        }
+
+        function drawCurrencyChart(data) {
+            const ctx = document.getElementById('currencyChart').getContext('2d');
+            if (currencyChart) currencyChart.destroy();
+
+            currencyChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.status),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb']
+                    }]
+                }
+            });
+        }
+
+        function drawTopClientsTable(clients) {
+            const tbody = document.querySelector('#topClientsTable tbody');
+            tbody.innerHTML = clients.map((c, i) => `
+                <tr>
+                    <td><span class="badge bg-primary">${i + 1}</span></td>
+                    <td>${c.customer}</td>
+                    <td>${c.email}</td>
+                    <td class="text-end fw-bold">$${c.revenue.toLocaleString('fr-FR')}</td>
+                    <td class="text-center">${c.invoiceCount}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Au chargement
+        document.addEventListener('DOMContentLoaded', loadAnalyticsData);
+
+        // Rafraîchir toutes les 5 minutes
+        setInterval(loadAnalyticsData, 5 * 60 * 1000);
+    </script>
+}

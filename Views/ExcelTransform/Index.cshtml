@@ -1,0 +1,69 @@
+@model LandiGlobalTemplate.Models.ExcelTransformViewModel
+
+@{
+    ViewData["Title"] = "Importateur Excel LAN / STOCK / SELLS OUT";
+}
+
+<div class="container py-4">
+    <h1>@ViewData["Title"]</h1>
+    <p class="lead">Import your original Excel file, automatically add N.Week, family name and product name, then download the transformed file.</p>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form asp-action="Upload" asp-controller="ExcelTransform" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">File Type</label>
+                    <div class="btn-group" role="group" aria-label="File Type">
+                        <input type="radio" class="btn-check" name="ImportType" id="typeLan" value="LAN" autocomplete="off" @(Model.ImportType == LandiGlobalTemplate.Models.ExcelImportType.LAN ? "checked" : "") />
+                        <label class="btn btn-outline-primary" for="typeLan">LAN</label>
+
+                        <input type="radio" class="btn-check" name="ImportType" id="typeStock" value="STOCK" autocomplete="off" @(Model.ImportType == LandiGlobalTemplate.Models.ExcelImportType.STOCK ? "checked" : "") />
+                        <label class="btn btn-outline-primary" for="typeStock">STOCK</label>
+
+                        <input type="radio" class="btn-check" name="ImportType" id="typeSellsOut" value="SELLSOUT" autocomplete="off" @(Model.ImportType == LandiGlobalTemplate.Models.ExcelImportType.SELLSOUT ? "checked" : "") />
+                        <label class="btn btn-outline-primary" for="typeSellsOut">SELLS OUT</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="File" class="form-label">Original Excel File</label>
+                    <input asp-for="File" type="file" class="form-control" accept=".xlsx,.xls" />
+                    <span asp-validation-for="File" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="MappingFile" class="form-label">Product Mapping File (Optional)</label>
+                    <input asp-for="MappingFile" type="file" class="form-control" accept=".xlsx,.xls" />
+                    <div class="form-text">If you provide a mapping of Item No → Product Family → Family Name, it will be used.</div>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-upload"></i> Import and Transform
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@modelError.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="alert alert-info">
+        <strong>Steps:</strong>
+        <ol>
+            <li>Choose the file type: LAN, STOCK or Sells Out.</li>
+            <li>Select the original Excel file.</li>
+            <li>Optional: select the product mapping file.</li>
+            <li>Click on « Import and Transform ».</li>
+            <li>Review the data and download the transformed file.</li>
+        </ol>
+    </div>
+</div>

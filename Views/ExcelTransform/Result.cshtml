@@ -1,0 +1,51 @@
+@model LandiGlobalTemplate.Models.ExcelTransformViewModel
+
+@{
+    ViewData["Title"] = "Résultat de la transformation Excel";
+}
+
+<div class="container py-4">
+    <h1>@ViewData["Title"]</h1>
+    <p class="lead">Transformed file for <strong>@Model.Result?.ImportTypeLabel</strong> with <strong>@Model.Result?.TotalRows</strong> rows.</p>
+
+    <div class="mb-3">
+        <a asp-action="Download" asp-controller="ExcelTransform" class="btn btn-primary">
+            <i class="fas fa-file-download"></i> Download the transformed file
+        </a>
+        <a asp-action="Index" asp-controller="ExcelTransform" class="btn btn-secondary ms-2">
+            <i class="fas fa-arrow-left"></i> Return to import
+        </a>
+    </div>
+
+    @if (Model.Result?.Rows != null && Model.Result.Rows.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        @foreach (var header in Model.Result.Headers)
+                        {
+                            <th>@header</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Result.Rows)
+                    {
+                        <tr>
+                            @foreach (var cell in row)
+                            {
+                                <td>@cell</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted">Preview of the first 50 rows.</p>
+    }
+    else
+    {
+        <div class="alert alert-warning">No rows to display.</div>
+    }
+</div>

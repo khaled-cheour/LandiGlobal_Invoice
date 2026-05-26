@@ -1,0 +1,246 @@
+﻿@{
+    ViewData["Title"] = "Accueil";
+}
+
+<!-- Hero Background -->
+<div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); 
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1); 
+            padding: 4rem 0;">
+    <div class="container py-5">
+        <!-- Central Hero Section -->
+        <div class="row align-items-center mb-4">
+            <div class="col-12 text-center mb-4">
+                <h1 class="display-3 fw-bold mb-3">
+                    <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                  -webkit-background-clip: text; 
+                                  -webkit-text-fill-color: transparent;
+                                  background-clip: text;">
+                        🚀 Landi Global
+                    </span>
+                </h1>
+                <p class="lead text-muted mb-3" style="font-size: 1.25rem;">Intelligent commercial invoice management system</p>
+                <p class="text-muted">Automate your workflow with 100% validation, data enrichment, and PDF generation</p>
+            </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <a href="@Url.Action("Index", "Invoice")" class="btn btn-lg px-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                        <i class="fas fa-file-upload me-2"></i> Upload PDF Invoice
+                    </a>
+                    <a href="@Url.Action("Index", "ExcelTransform")" class="btn btn-lg px-5" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border: none; color: white;">
+                        <i class="fas fa-file-excel me-2"></i> Import Excel
+                    </a>
+                    @if (User?.Identity?.IsAuthenticated == true)
+                    {
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-lg btn-outline-primary px-5">
+                            <i class="fas fa-box me-2"></i> Produits
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Illustration -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); 
+                        border-radius: 20px; 
+                        padding: 3rem; 
+                        border: 2px dashed rgba(102, 126, 234, 0.2); 
+                        display: inline-block;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📊</div>
+                <h3 class="text-muted">Gestion Complète & Intelligente</h3>
+                <p class="text-muted">Factures • Données • Analytics</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section Title -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="text-center fw-bold mb-4">
+                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                           -webkit-background-clip: text; 
+                           -webkit-text-fill-color: transparent;
+                           background-clip: text;">
+                    ✨ Nos Avantages
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <!-- Features Grid - 3 Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #667eea; transition: all 0.3s ease;">
+                <div class="card-body text-center p-4">
+                    <div style="width: 70px; 
+                                height: 70px; 
+                                margin: 0 auto 1.5rem; 
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                border-radius: 15px; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-size: 2rem; 
+                                color: white;">
+                        ✓
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Validation</h5>
+                    <p class="card-text text-muted small mb-3">100% Validation des Produits</p>
+                    <p class="fw-bold" style="color: #667eea; font-size: 1.2rem;">64+ Produits</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #f5576c; transition: all 0.3s ease;">
+                <div class="card-body text-center p-4">
+                    <div style="width: 70px; 
+                                height: 70px; 
+                                margin: 0 auto 1.5rem; 
+                                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+                                border-radius: 15px; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-size: 2rem;
+                                color: white;">
+                        ⚡
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Enrichissement</h5>
+                    <p class="card-text text-muted small mb-3">Remplissage Automatique des Données</p>
+                    <p class="fw-bold" style="color: #f5576c; font-size: 1.2rem;">Instant</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm" style="border-left: 4px solid #00f2fe; transition: all 0.3s ease;">
+                <div class="card-body text-center p-4">
+                    <div style="width: 70px; 
+                                height: 70px; 
+                                margin: 0 auto 1.5rem; 
+                                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+                                border-radius: 15px; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-size: 2rem;
+                                color: white;">
+                        📄
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Génération</h5>
+                    <p class="card-text text-muted small mb-3">Export PDF Enrichi et Complet</p>
+                    <p class="fw-bold" style="color: #00f2fe; font-size: 1.2rem;">Vérifié</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <hr class="my-5" style="border-color: rgba(102, 126, 234, 0.1);" />
+
+    <!-- Statistics Section Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-center fw-bold">
+                <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                           -webkit-background-clip: text; 
+                           -webkit-text-fill-color: transparent;
+                           background-clip: text;">
+                    📊 Statistiques Clés
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <!-- Statistics Grid - 4 Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-top: 3px solid #667eea;">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">📋</div>
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Factures Traitées</h6>
+                    <h3 class="fw-bold mb-2" style="color: #667eea;">100+</h3>
+                    <p class="text-muted small">Gestion centralisée</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(67, 233, 123, 0.05) 0%, rgba(56, 249, 215, 0.05) 100%); border-top: 3px solid #43e97b;">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">✅</div>
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Validation</h6>
+                    <h3 class="fw-bold mb-2" style="color: #43e97b;">100%</h3>
+                    <p class="text-muted small">Confiance totale</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(245, 87, 108, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%); border-top: 3px solid #f5576c;">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">📈</div>
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Performance</h6>
+                    <h3 class="fw-bold mb-2" style="color: #f5576c;">Rapide</h3>
+                    <p class="text-muted small">Optimisée</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%); border-top: 3px solid #4facfe;">
+                <div class="card-body text-center p-4">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔒</div>
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Sécurité</h6>
+                    <h3 class="fw-bold mb-2" style="color: #4facfe;">Certifiée</h3>
+                    <p class="text-muted small">Données protégées</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA Section -->
+    <div class="row mt-5 pt-5">
+        <div class="col-12 text-center">
+            <div style="background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); 
+                        border-radius: 15px; 
+                        padding: 2rem; 
+                        border: 1px solid rgba(102, 126, 234, 0.2);">
+                <h3 class="fw-bold mb-3">Prêt à démarrer ?</h3>
+                <p class="text-muted mb-4">Commencez maintenant avec nos outils puissants</p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center">
+                    <a href="@Url.Action("Index", "Invoice")" class="btn btn-lg px-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white;">
+                        <i class="fas fa-file-upload me-2"></i> Charger une Facture
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(102, 126, 234, 0.15) !important;
+    }
+
+    .btn:not(.btn-outline-primary):not(.btn-outline-secondary):hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
